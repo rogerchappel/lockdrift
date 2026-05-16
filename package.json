@@ -34,6 +34,14 @@
   ],
   "author": "Roger Chappel",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/rogerchappel/lockdrift.git"
+  },
+  "bugs": {
+    "url": "https://github.com/rogerchappel/lockdrift/issues"
+  },
+  "homepage": "https://github.com/rogerchappel/lockdrift#readme",
   "engines": {
     "node": ">=20"
   },
