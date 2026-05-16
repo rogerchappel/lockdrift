@@ -3,20 +3,46 @@
   "version": "0.1.0",
   "description": "Offline JavaScript lockfile drift and supply-chain facts auditor.",
   "type": "module",
-  "main": "./src/index.js",
+  "main": "./dist/index.js",
   "exports": {
-    ".": "./src/index.js"
+    ".": "./dist/index.js"
+  },
+  "bin": {
+    "lockdrift": "./dist/cli.js"
   },
   "files": [
-    "src",
+    "dist",
     "README.md"
   ],
   "scripts": {
-    "test": "node --test",
+    "build": "tsc",
+    "check": "tsc --noEmit",
+    "test": "npm run build && node --test dist/**/*.test.js",
+    "smoke": "npm run build && node dist/cli.js scan fixtures/npm-drift --out /tmp/lockdrift-smoke.md && node dist/cli.js scan fixtures/pnpm-workspace --format json --fail-on high > /tmp/lockdrift-smoke.json && node dist/cli.js explain fixtures/npm-drift/package-lock.json --package left-pad",
     "package:smoke": "npm pack --dry-run",
-    "release:check": "npm test && npm run package:smoke"
+    "release:check": "npm run check && npm test && npm run smoke && npm run package:smoke"
   },
-  "keywords": [],
+  "keywords": [
+    "lockfile",
+    "supply-chain",
+    "npm",
+    "pnpm",
+    "yarn",
+    "cli",
+    "security",
+    "audit"
+  ],
   "author": "Roger Chappel",
-  "license": "MIT"
+  "license": "MIT",
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "commander": "^12.1.0",
+    "yaml": "^2.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.10.2",
+    "typescript": "^5.7.2"
+  }
 }
