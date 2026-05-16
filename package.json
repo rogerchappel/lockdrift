@@ -11,7 +11,7 @@
     "lockdrift": "./dist/src/cli.js"
   },
   "files": [
-    "dist",
+    "dist/src",
     "README.md"
   ],
   "scripts": {
