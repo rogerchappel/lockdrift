@@ -94,8 +94,9 @@ function findMissingLockEntries(dependencies: ManifestDependency[], packages: Lo
 
 function findUnusedLockEntries(dependencies: ManifestDependency[], packages: LockPackage[], config: LockdriftConfig): Finding[] {
   const directNames = new Set(dependencies.map((dependency) => dependency.name));
+  const referencedNames = new Set(packages.flatMap((pkg) => pkg.dependencyNames));
   return packages
-    .filter((pkg) => !isIgnored(pkg.name, config) && !directNames.has(pkg.name) && pkg.dependencyNames.length === 0)
+    .filter((pkg) => !isIgnored(pkg.name, config) && !directNames.has(pkg.name) && !referencedNames.has(pkg.name))
     .map((pkg) => ({
       code: 'unused-lock-entry',
       severity: 'low',
