@@ -25,3 +25,9 @@ test('scan detects package manager mismatch', async () => {
 
   assert.ok(summary.findings.some((finding) => finding.code === 'package-manager-mismatch'));
 });
+
+test('scan accepts clean npm fixture', async () => {
+  const summary = await scanProject('fixtures/clean-npm');
+
+  assert.equal(summary.findings.length, 0);
+});
