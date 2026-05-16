@@ -60,7 +60,7 @@ async function readManifest(file: string, root: string): Promise<PackageManifest
   try {
     const raw = JSON.parse(await readFile(file, 'utf8')) as RawPackageJson;
     const relative = path.relative(root, file) || 'package.json';
-    const workspace = raw.name ?? path.dirname(relative) || '.';
+    const workspace = raw.name ?? (path.dirname(relative) || '.');
     const dependencies: ManifestDependency[] = [];
 
     for (const scope of dependencyScopes) {
