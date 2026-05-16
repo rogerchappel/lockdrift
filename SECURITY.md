@@ -1,58 +1,25 @@
 # Security Policy
 
-## Supported Versions
+LockDrift is an offline auditor. It should not install dependencies, update lockfiles, publish packages, or call external registries during a scan.
 
-Replace this section with the supported versions for `lockdrift`.
+## Reporting
 
-Example:
-
-```md
-| Version | Supported |
-| --- | --- |
-| .x | Yes |
-| < .0 | No |
-```
-
-If the project does not publish versioned releases yet, say that clearly.
-
-## Reporting a Vulnerability
-
-Please do not report suspected vulnerabilities in public issues, pull requests, or discussions.
-
-Ask maintainers for the private security reporting path before sharing details.
-
-If no private reporting path exists yet, ask maintainers through public project channels for a private reporting path. Do not include exploit details, secrets, personal data, or sensitive technical details in public messages.
-
-## What to Include
-
-When a private reporting path is available, include:
-
-- A clear description of the issue.
-- Affected versions, files, packages, workflows, or configuration.
-- Steps to reproduce, proof of concept, or attack scenario when safe to share.
-- Potential impact.
-- Suggested mitigation, if known.
-
-## Response Expectations
-
-Maintainers review good-faith reports as capacity allows.
-
-Do not imply paid support, guaranteed response times, guaranteed fixes, or service-level agreements unless `lockdrift` explicitly provides them.
+Please report suspected security issues through GitHub private vulnerability reporting when available, or contact the maintainers before publishing details.
 
 ## Scope
 
 In scope:
 
-- Vulnerabilities in lockdrift.
-- Insecure default configuration shipped by this project.
-- CI, release, or dependency guidance maintained by this project.
+- Bugs that cause LockDrift to execute untrusted project data.
+- Bugs that make scans write outside paths explicitly provided by the user.
+- Release, package, or CI configuration issues in this repository.
 
 Out of scope:
 
-- General support requests.
-- Requests for guaranteed maintenance timelines.
-- Issues in unrelated downstream projects.
+- Vulnerabilities in projects scanned by LockDrift.
+- Vulnerability database completeness.
+- Findings that correctly report risky lockfile facts.
 
-## Disclosure
+## Supported Versions
 
-Coordinate disclosure with maintainers before publishing vulnerability details.
+The current \`main\` branch and latest released version receive security fixes.
