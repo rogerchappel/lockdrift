@@ -7,7 +7,7 @@ const execFileAsync = promisify(execFile);
 
 test('cli explain prints package facts', async () => {
   const { stdout } = await execFileAsync(process.execPath, [
-    'dist/cli.js',
+    'dist/src/cli.js',
     'explain',
     'fixtures/npm-drift/package-lock.json',
     '--package',
@@ -19,7 +19,7 @@ test('cli explain prints package facts', async () => {
 
 test('cli scan json exits non-zero when threshold is met', async () => {
   await assert.rejects(
-    execFileAsync(process.execPath, ['dist/cli.js', 'scan', 'fixtures/npm-drift', '--format', 'json', '--fail-on', 'high']),
+    execFileAsync(process.execPath, ['dist/src/cli.js', 'scan', 'fixtures/npm-drift', '--format', 'json', '--fail-on', 'high']),
     /Command failed/
   );
 });
