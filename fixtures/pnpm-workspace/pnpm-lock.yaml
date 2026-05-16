@@ -1,0 +1,16 @@
+lockfileVersion: '9.0'
+
+packages:
+  /kleur/4.1.5:
+    resolution:
+      integrity: sha512-fixture
+      tarball: https://registry.npmjs.org/kleur/-/kleur-4.1.5.tgz
+
+  /left-pad/1.3.0:
+    resolution:
+      integrity: sha512-fixture
+      tarball: https://registry.npmjs.org/left-pad/-/left-pad-1.3.0.tgz
+
+  /ssh-tool/2.0.0:
+    resolution:
+      repo: git+ssh://git@github.com/example/ssh-tool.git

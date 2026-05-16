@@ -1,0 +1,8 @@
+{
+  "name": "@fixture/app",
+  "private": true,
+  "dependencies": {
+    "kleur": "^4.1.5",
+    "@fixture/lib": "workspace:*"
+  }
+}
