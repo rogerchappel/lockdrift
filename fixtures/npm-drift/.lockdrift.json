@@ -1,0 +1,4 @@
+{
+  "allowedRegistries": ["https://registry.npmjs.org/"],
+  "failOn": "high"
+}
