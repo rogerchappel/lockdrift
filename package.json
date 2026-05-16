@@ -8,7 +8,7 @@
     ".": "./dist/index.js"
   },
   "bin": {
-    "lockdrift": "./dist/cli.js"
+    "lockdrift": "./dist/src/cli.js"
   },
   "files": [
     "dist",
@@ -18,7 +18,7 @@
     "build": "tsc",
     "check": "tsc --noEmit",
     "test": "npm run build && node --test dist/**/*.test.js",
-    "smoke": "npm run build && node dist/cli.js scan fixtures/npm-drift --out /tmp/lockdrift-smoke.md && node dist/cli.js scan fixtures/pnpm-workspace --format json --fail-on high > /tmp/lockdrift-smoke.json && node dist/cli.js explain fixtures/npm-drift/package-lock.json --package left-pad",
+    "smoke": "npm run build && node dist/src/cli.js scan fixtures/npm-drift --out /tmp/lockdrift-smoke.md && node dist/src/cli.js scan fixtures/pnpm-workspace --format json --fail-on high > /tmp/lockdrift-smoke.json && node dist/src/cli.js explain fixtures/npm-drift/package-lock.json --package left-pad",
     "package:smoke": "npm pack --dry-run",
     "release:check": "npm run check && npm test && npm run smoke && npm run package:smoke"
   },
