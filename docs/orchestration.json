@@ -1,0 +1,30 @@
+{
+  "name": "lockdrift",
+  "purpose": "Offline JavaScript lockfile drift and supply-chain facts auditor",
+  "entrypoints": {
+    "scan": "lockdrift scan . --format json",
+    "report": "lockdrift scan . --out docs/LOCKDRIFT.md",
+    "explain": "lockdrift explain pnpm-lock.yaml --package commander"
+  },
+  "inputs": [
+    "package.json",
+    "package-lock.json",
+    "pnpm-lock.yaml",
+    "yarn.lock",
+    ".lockdrift.json",
+    "workspace package.json files"
+  ],
+  "outputs": [
+    "deterministic Markdown report",
+    "deterministic JSON report",
+    "process exit code based on fail threshold"
+  ],
+  "safety": {
+    "network": false,
+    "installsDependencies": false,
+    "modifiesProjectByDefault": false,
+    "writesOnlyWithOutFlag": true
+  },
+  "defaultFailOn": "high",
+  "recommendedCiFailOn": "medium"
+}
