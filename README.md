@@ -78,3 +78,11 @@ Yarn Berry support is limited in this MVP. Vulnerability database lookups are in
 The fixture suite under \`fixtures/\` covers npm, pnpm, Yarn, workspace, registry, duplicate, and mismatch cases. Tests compile TypeScript first and execute against \`dist/\` so the CLI path is exercised.
 
 See \`docs/PRD.md\`, \`docs/TASKS.md\`, and \`docs/ORCHESTRATION.md\` for factory context.
+
+## Package contents
+
+The npm package allowlist includes the runtime files plus the public support
+documents needed for release review: `README.md`, `LICENSE`, `SECURITY.md`, `CHANGELOG.md`, `CONTRIBUTING.md`, `CODE_OF_CONDUCT.md`.
+Run `npm run package:smoke` or `npm pack --dry-run` before publishing to
+confirm those files are still present in the tarball.
+
