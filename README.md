@@ -86,3 +86,8 @@ documents needed for release review: `README.md`, `LICENSE`, `SECURITY.md`, `CHA
 Run `npm run package:smoke` or `npm pack --dry-run` before publishing to
 confirm those files are still present in the tarball.
 
+## Verification
+
+Run the release-readiness checks that match this package before publishing or opening a release PR.
+
+- `npm run release:check` - run the full release gate
