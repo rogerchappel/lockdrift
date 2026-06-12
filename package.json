@@ -3,9 +3,9 @@
   "version": "0.1.0",
   "description": "Offline JavaScript lockfile drift and supply-chain facts auditor.",
   "type": "module",
-  "main": "./dist/index.js",
+  "main": "./dist/src/index.js",
   "exports": {
-    ".": "./dist/index.js"
+    ".": "./dist/src/index.js"
   },
   "bin": {
     "lockdrift": "./dist/src/cli.js"
@@ -24,8 +24,9 @@
     "check": "tsc --noEmit",
     "test": "npm run build && node --test dist/**/*.test.js",
     "smoke": "npm run build && node dist/src/cli.js scan fixtures/clean-npm --out /tmp/lockdrift-smoke.md && node dist/src/cli.js scan fixtures/clean-npm --format json > /tmp/lockdrift-smoke.json && node dist/src/cli.js explain fixtures/npm-drift/package-lock.json --package left-pad",
-    "package:smoke": "npm pack --dry-run",
-    "release:check": "npm run check && npm test && npm run smoke && npm run package:smoke"
+    "package:smoke": "npm run build && npm pack --dry-run",
+    "release:check": "npm run check && npm test && npm run smoke && npm run package:smoke",
+    "prepack": "npm run build"
   },
   "keywords": [
     "lockfile",
