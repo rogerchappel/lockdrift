@@ -91,3 +91,14 @@ confirm those files are still present in the tarball.
 Run the release-readiness checks that match this package before publishing or opening a release PR.
 
 - `npm run release:check` - run the full release gate
+
+## Release readiness
+
+Before opening a release PR, run the same checks that CI runs:
+
+```sh
+npm run release:check
+npm pack --dry-run
+```
+
+The package smoke keeps the published tarball contents visible before tagging or publishing.
