@@ -25,7 +25,7 @@
     "test": "npm run build && node --test dist/**/*.test.js",
     "smoke": "npm run build && node dist/src/cli.js scan fixtures/clean-npm --out /tmp/lockdrift-smoke.md && node dist/src/cli.js scan fixtures/clean-npm --format json > /tmp/lockdrift-smoke.json && node dist/src/cli.js explain fixtures/npm-drift/package-lock.json --package left-pad",
     "package:smoke": "npm run build && npm pack --dry-run",
-    "release:check": "npm run check && npm test && npm run smoke && npm run package:smoke",
+    "release:check": "npm run check && npm run build && npm test && npm run smoke && npm run package:smoke",
     "prepack": "npm run build"
   },
   "keywords": [
