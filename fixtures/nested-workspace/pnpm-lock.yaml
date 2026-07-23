@@ -1,0 +1,12 @@
+lockfileVersion: '9.0'
+
+packages:
+  /left-pad/1.3.0:
+    resolution:
+      integrity: sha512-fixture
+      tarball: https://registry.npmjs.org/left-pad/-/left-pad-1.3.0.tgz
+
+  /stale-package/1.0.0:
+    resolution:
+      integrity: sha512-fixture
+      tarball: https://registry.npmjs.org/stale-package/-/stale-package-1.0.0.tgz

@@ -1,0 +1,7 @@
+{
+  "name": "nested-app",
+  "dependencies": {
+    "left-pad": "^1.3.0",
+    "missing-package": "^2.0.0"
+  }
+}
