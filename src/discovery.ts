@@ -30,30 +30,77 @@ export async function readManifests(root: string, workspaceRoots: string[]): Pro
   const candidates = new Set<string>([path.join(root, 'package.json')]);
 
   for (const pattern of workspaceRoots) {
-    if (pattern.endsWith('/*')) {
-      const parent = path.join(root, pattern.slice(0, -2));
-      for (const entry of await safeReadDir(parent)) {
-        candidates.add(path.join(parent, entry.name, 'package.json'));
-      }
-    } else {
-      candidates.add(path.join(root, pattern, 'package.json'));
+    for (const candidate of await expandWorkspacePattern(root, pattern)) {
+      candidates.add(candidate);
     }
   }
 
   const rootManifest = await readManifest(path.join(root, 'package.json'), root);
   for (const workspace of rootManifest?.workspaces ?? []) {
-    if (workspace.endsWith('/*')) {
-      const parent = path.join(root, workspace.slice(0, -2));
-      for (const entry of await safeReadDir(parent)) {
-        candidates.add(path.join(parent, entry.name, 'package.json'));
-      }
-    } else {
-      candidates.add(path.join(root, workspace, 'package.json'));
+    for (const candidate of await expandWorkspacePattern(root, workspace)) {
+      candidates.add(candidate);
     }
   }
 
   const manifests = await Promise.all([...candidates].map((file) => readManifest(file, root)));
   return manifests.filter((manifest): manifest is PackageManifest => manifest !== undefined).sort((a, b) => a.path.localeCompare(b.path));
+}
+
+async function expandWorkspacePattern(root: string, pattern: string): Promise<string[]> {
+  const segments = validateWorkspacePattern(pattern);
+  const candidates: string[] = [];
+
+  async function expand(directory: string, index: number): Promise<void> {
+    if (index === segments.length) {
+      candidates.push(path.join(directory, 'package.json'));
+      return;
+    }
+
+    const segment = segments[index];
+    if (segment === '**') {
+      await expand(directory, index + 1);
+      for (const entry of await safeReadDir(directory)) {
+        if (entry.isDirectory() && !ignoredDirectories.has(entry.name)) {
+          await expand(path.join(directory, entry.name), index);
+        }
+      }
+      return;
+    }
+
+    if (segment === '*') {
+      for (const entry of await safeReadDir(directory)) {
+        if (entry.isDirectory() && !ignoredDirectories.has(entry.name)) {
+          await expand(path.join(directory, entry.name), index + 1);
+        }
+      }
+      return;
+    }
+
+    if (!ignoredDirectories.has(segment)) {
+      await expand(path.join(directory, segment), index + 1);
+    }
+  }
+
+  await expand(root, 0);
+  return candidates;
+}
+
+function validateWorkspacePattern(pattern: string): string[] {
+  if (pattern.length === 0 || path.isAbsolute(pattern)) {
+    throw new Error(`Unsupported workspace pattern "${pattern}": use a non-empty path relative to the project root.`);
+  }
+
+  const segments = pattern.split('/');
+  if (segments.some((segment) => segment === '' || segment === '.' || segment === '..')) {
+    throw new Error(`Unsupported workspace pattern "${pattern}": empty, "." and ".." path segments are not allowed.`);
+  }
+
+  for (const segment of segments) {
+    if (segment !== '*' && segment !== '**' && /[*?[\]{}!]/.test(segment)) {
+      throw new Error(`Unsupported workspace pattern "${pattern}": only complete "*" and "**" path segments are supported.`);
+    }
+  }
+  return segments;
 }
 
 async function readManifest(file: string, root: string): Promise<PackageManifest | undefined> {
