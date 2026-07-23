@@ -20,6 +20,25 @@ test('scan discovers workspace manifests', async () => {
   assert.ok(summary.manifests.some((manifest) => manifest.name === '@fixture/lib'));
 });
 
+test('scan discovers nested workspace manifests and analyzes their dependencies', async () => {
+  const summary = await scanProject('fixtures/nested-workspace');
+  const nestedManifest = summary.manifests.find((manifest) => manifest.name === 'nested-app');
+
+  assert.deepEqual(
+    nestedManifest?.dependencies.map((dependency) => dependency.name),
+    ['left-pad', 'missing-package']
+  );
+  assert.ok(summary.findings.some((finding) =>
+    finding.code === 'missing-lock-entry' && finding.packageName === 'missing-package'
+  ));
+  assert.ok(summary.findings.some((finding) =>
+    finding.code === 'unused-lock-entry' && finding.packageName === 'stale-package'
+  ));
+  assert.ok(!summary.findings.some((finding) =>
+    finding.code === 'unused-lock-entry' && finding.packageName === 'left-pad'
+  ));
+});
+
 test('scan detects package manager mismatch', async () => {
   const summary = await scanProject('fixtures/yarn-mismatch');
 
