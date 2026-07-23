@@ -49,6 +49,15 @@ Create \`.lockdrift.json\` at the scanned project root:
 }
 \`\`\`
 
+Workspace patterns from both `package.json` and `workspaceRoots` use
+root-relative directory segments. Literal segments, `*` (one directory), and
+`**` (zero or more directories) are supported, so `packages/*` finds direct
+packages while `packages/**` also finds nested packages. Discovery skips
+`.git`, `node_modules`, `dist`, and `coverage`, and deduplicates manifests that
+match more than one pattern. Partial-segment and extended glob syntax such as
+`app-*`, `?`, character classes, braces, and negation is rejected with an
+explicit error.
+
 ## Safety Model
 
 - Runs offline.
