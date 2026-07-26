@@ -1,0 +1,32 @@
+lockfileVersion: '9.0'
+
+packages:
+  '@scope/direct@2.0.0':
+    resolution:
+      integrity: sha512-scoped
+
+  ignored-tool@3.0.0:
+    resolution:
+      repo: git+ssh://git@github.com/example/ignored-tool.git
+
+  kleur@4.1.5:
+    resolution:
+      integrity: sha512-kleur
+
+  kleur@3.0.3:
+    resolution:
+      integrity: sha512-kleur-old
+
+  peer-user@1.0.0(kleur@4.1.5):
+    resolution:
+      integrity: sha512-peer
+    peerDependencies:
+      kleur: 4.1.5
+
+  /legacy-package/1.2.3_peer@2.0.0:
+    resolution:
+      integrity: sha512-legacy
+
+  /@legacy/scope/4.5.6_peer@2.0.0:
+    resolution:
+      integrity: sha512-legacy-scope
