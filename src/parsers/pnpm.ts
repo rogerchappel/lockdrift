@@ -50,6 +50,19 @@ export async function parsePnpmLockfile(file: string, root: string): Promise<Loc
 
 function parsePnpmPackageKey(key: string): { name: string; version?: string } {
   const clean = key.replace(/^\//, '');
+
+  // pnpm 9 uses name@version(peer@version), while older lockfiles use
+  // /name/version_peer@version. Scoped package names contain the first @.
+  const modernSeparator = clean.indexOf('@', clean.startsWith('@') ? clean.indexOf('/') : 0);
+  const slashCount = [...clean].filter((character) => character === '/').length;
+  const isLegacySlashKey = clean.startsWith('@') ? slashCount > 1 : slashCount > 0;
+  if (!isLegacySlashKey && modernSeparator > (clean.startsWith('@') ? clean.indexOf('/') : 0)) {
+    return {
+      name: clean.slice(0, modernSeparator),
+      version: clean.slice(modernSeparator + 1).split('(')[0]
+    };
+  }
+
   if (clean.startsWith('@')) {
     const parts = clean.split('/');
     const scopedName = `${parts[0]}/${parts[1]}`;
