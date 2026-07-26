@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { scanProject } from '../src/scanner.js';
+import { explainPackage, scanProject } from '../src/scanner.js';
 
 test('scan detects npm drift findings', async () => {
   const summary = await scanProject('fixtures/npm-drift');
@@ -18,6 +18,28 @@ test('scan discovers workspace manifests', async () => {
 
   assert.ok(summary.manifests.some((manifest) => manifest.name === '@fixture/app'));
   assert.ok(summary.manifests.some((manifest) => manifest.name === '@fixture/lib'));
+});
+
+test('scan analyzes real pnpm v9 keys by package name', async () => {
+  const summary = await scanProject('fixtures/pnpm-v9');
+
+  assert.ok(summary.findings.some((finding) =>
+    finding.code === 'duplicate-version' && finding.packageName === 'kleur'
+  ));
+  assert.ok(!summary.findings.some((finding) =>
+    finding.code === 'missing-lock-entry'
+  ));
+  assert.ok(!summary.findings.some((finding) =>
+    finding.packageName === 'ignored-tool'
+  ));
+});
+
+test('explain matches pnpm v9 peer-qualified package keys', async () => {
+  const explanation = await explainPackage('fixtures/pnpm-v9/pnpm-lock.yaml', 'peer-user');
+
+  assert.match(explanation, /^peer-user@1\.0\.0/m);
+  assert.match(explanation, /key: peer-user@1\.0\.0\(kleur@4\.1\.5\)/);
+  assert.match(explanation, /dependencies: kleur/);
 });
 
 test('scan discovers nested workspace manifests and analyzes their dependencies', async () => {
