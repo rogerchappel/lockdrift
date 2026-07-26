@@ -1,0 +1,10 @@
+{
+  "name": "pnpm-v9-fixture",
+  "private": true,
+  "packageManager": "pnpm@9.15.0",
+  "dependencies": {
+    "@scope/direct": "^2.0.0",
+    "ignored-tool": "^3.0.0",
+    "kleur": "^4.1.5"
+  }
+}
