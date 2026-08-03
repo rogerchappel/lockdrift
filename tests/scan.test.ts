@@ -13,6 +13,13 @@ test('scan detects npm drift findings', async () => {
   assert.ok(codes.has('unused-lock-entry'));
 });
 
+test('scan detects nested npm v1 duplicate versions without false unused entries', async () => {
+  const summary = await scanProject('fixtures/npm-v1-nested');
+
+  assert.ok(summary.findings.some((finding) => finding.code === 'duplicate-version' && finding.packageName === 'leaf'));
+  assert.ok(!summary.findings.some((finding) => finding.code === 'unused-lock-entry'));
+});
+
 test('scan discovers workspace manifests', async () => {
   const summary = await scanProject('fixtures/pnpm-workspace');
 

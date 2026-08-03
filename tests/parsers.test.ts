@@ -14,6 +14,20 @@ test('parses npm package-lock facts', async () => {
   assert.ok(facts.packages.some((pkg) => pkg.source === 'git'));
 });
 
+test('recursively parses npm v1 dependency maps with stable nested keys', async () => {
+  const facts = await parseLockfile(path.join(root, 'npm-v1-nested/package-lock.json'), path.join(root, 'npm-v1-nested'));
+  const leaves = facts.packages.filter((pkg) => pkg.name === 'leaf');
+
+  assert.deepEqual(leaves.map(({ key, version, resolved, integrity, source }) => ({ key, version, resolved, integrity, source })), [
+    { key: 'node_modules/other/node_modules/leaf', version: '2.0.0', resolved: 'https://registry.npmjs.org/leaf/-/leaf-2.0.0.tgz', integrity: 'sha512-leaf-two', source: 'registry' },
+    { key: 'node_modules/parent/node_modules/leaf', version: '1.0.0', resolved: 'https://registry.npmjs.org/leaf/-/leaf-1.0.0.tgz', integrity: 'sha512-leaf-one', source: 'registry' }
+  ]);
+  assert.deepEqual(
+    facts.packages.filter((pkg) => pkg.name === 'other' || pkg.name === 'parent').map(({ name, dependencyNames }) => ({ name, dependencyNames })),
+    [{ name: 'other', dependencyNames: ['leaf'] }, { name: 'parent', dependencyNames: ['leaf'] }]
+  );
+});
+
 test('parses pnpm lockfile facts', async () => {
   const facts = await parseLockfile(path.join(root, 'pnpm-workspace/pnpm-lock.yaml'), path.join(root, 'pnpm-workspace'));
 
