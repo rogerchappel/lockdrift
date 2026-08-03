@@ -14,7 +14,8 @@ type NpmPackageEntry = {
   version?: string;
   resolved?: string;
   integrity?: string;
-  dependencies?: Record<string, string>;
+  requires?: Record<string, string>;
+  dependencies?: Record<string, string | NpmPackageEntry>;
   devDependencies?: Record<string, string>;
   optionalDependencies?: Record<string, string>;
 };
@@ -32,9 +33,7 @@ export async function parseNpmLockfile(file: string, root: string): Promise<Lock
       packages.push(toPackage(file, root, key, name, entry));
     }
   } else if (raw.dependencies) {
-    for (const [name, entry] of Object.entries(raw.dependencies)) {
-      packages.push(toPackage(file, root, `node_modules/${name}`, name, entry));
-    }
+    collectDependencyMapPackages(file, root, raw.dependencies, '', packages);
   }
 
   return {
@@ -43,6 +42,25 @@ export async function parseNpmLockfile(file: string, root: string): Promise<Lock
     packages: packages.sort((a, b) => a.key.localeCompare(b.key)),
     packageManager: raw.packageManager
   };
+}
+
+function collectDependencyMapPackages(
+  file: string,
+  root: string,
+  dependencies: Record<string, NpmPackageEntry>,
+  parentKey: string,
+  packages: LockPackage[]
+): void {
+  for (const [name, entry] of Object.entries(dependencies)) {
+    const key = `${parentKey}node_modules/${name}`;
+    packages.push(toPackage(file, root, key, name, entry));
+    const nested = Object.fromEntries(
+      Object.entries(entry.dependencies ?? {}).filter(
+        (dependency): dependency is [string, NpmPackageEntry] => typeof dependency[1] === 'object'
+      )
+    );
+    collectDependencyMapPackages(file, root, nested, `${key}/`, packages);
+  }
 }
 
 function toPackage(file: string, root: string, key: string, name: string, entry: NpmPackageEntry): LockPackage {
@@ -57,10 +75,11 @@ function toPackage(file: string, root: string, key: string, name: string, entry:
     lockfile: path.relative(root, file),
     key,
     dependencyNames: [
+      ...Object.keys(entry.requires ?? {}),
       ...Object.keys(entry.dependencies ?? {}),
       ...Object.keys(entry.devDependencies ?? {}),
       ...Object.keys(entry.optionalDependencies ?? {})
-    ].sort()
+    ].filter((name, index, names) => names.indexOf(name) === index).sort()
   };
 }
 
