@@ -6,48 +6,48 @@ LockDrift reads package manifests and lockfiles locally, then reports facts that
 
 ## Quick Start
 
-\`\`\`bash
+```bash
 npm install
 npm run build
 npx lockdrift scan . --out docs/LOCKDRIFT.md
 npx lockdrift scan . --format json --fail-on medium
 npx lockdrift explain pnpm-lock.yaml --package commander
-\`\`\`
+```
 
 For local development:
 
-\`\`\`bash
+```bash
 npm test
 npm run check
 npm run build
 npm run smoke
 bash scripts/validate.sh
-\`\`\`
+```
 
 ## CLI
 
-\`lockdrift scan [path]\`
+`lockdrift scan [path]`
 
-- \`--format markdown|json\`: choose report format. Default is Markdown.
-- \`--out <path>\`: write the report to a file. Without this, LockDrift writes to stdout.
-- \`--fail-on info|low|medium|high\`: exit non-zero when findings meet the threshold.
+- `--format markdown|json`: choose report format. Default is Markdown.
+- `--out <path>`: write the report to a file. Without this, LockDrift writes to stdout.
+- `--fail-on info|low|medium|high`: exit non-zero when findings meet the threshold.
 
-\`lockdrift explain <lockfile> --package <name>\`
+`lockdrift explain <lockfile> --package <name>`
 
 Prints the locked versions, source, resolved URL, integrity, and child dependency names for one package in one lockfile.
 
 ## Config
 
-Create \`.lockdrift.json\` at the scanned project root:
+Create `.lockdrift.json` at the scanned project root:
 
-\`\`\`json
+```json
 {
   "allowedRegistries": ["https://registry.npmjs.org/"],
   "ignoredPackages": ["internal-tool"],
   "failOn": "medium",
   "workspaceRoots": ["packages/*"]
 }
-\`\`\`
+```
 
 Workspace patterns from both `package.json` and `workspaceRoots` use
 root-relative directory segments. Literal segments, `*` (one directory), and
@@ -62,33 +62,33 @@ explicit error.
 
 - Runs offline.
 - Does not install, update, publish, or call registries.
-- Reads \`package.json\`, \`package-lock.json\`, \`pnpm-lock.yaml\`, \`yarn.lock\`, workspace manifests, and \`.lockdrift.json\`.
-- Writes only when \`--out\` is provided.
+- Reads `package.json`, `package-lock.json`, `pnpm-lock.yaml`, `yarn.lock`, workspace manifests, and `.lockdrift.json`.
+- Writes only when `--out` is provided.
 - Findings are review signals, not vulnerability database claims.
 
 ## Supported Lockfiles
 
-- npm \`package-lock.json\` v2/v3 package maps, plus recursively nested v1 dependency maps.
-- pnpm \`pnpm-lock.yaml\` package entries using legacy slash keys and the
+- npm `package-lock.json` v2/v3 package maps, plus recursively nested v1 dependency maps.
+- pnpm `pnpm-lock.yaml` package entries using legacy slash keys and the
   name-at-version keys emitted by pnpm 9, including scoped and peer-qualified
   packages.
-- Yarn v1 \`yarn.lock\`.
+- Yarn v1 `yarn.lock`.
 
 Yarn Berry support is limited in this MVP. Vulnerability database lookups are intentionally out of scope.
 
 ## CI Example
 
-\`\`\`yaml
+```yaml
 - run: npm ci
 - run: npm run build
 - run: npx lockdrift scan . --format json --fail-on medium
-\`\`\`
+```
 
 ## Development
 
-The fixture suite under \`fixtures/\` covers npm, pnpm, Yarn, workspace, registry, duplicate, and mismatch cases. Tests compile TypeScript first and execute against \`dist/\` so the CLI path is exercised.
+The fixture suite under `fixtures/` covers npm, pnpm, Yarn, workspace, registry, duplicate, and mismatch cases. Tests compile TypeScript first and execute against `dist/` so the CLI path is exercised.
 
-See \`docs/PRD.md\`, \`docs/TASKS.md\`, and \`docs/ORCHESTRATION.md\` for factory context.
+See `docs/PRD.md`, `docs/TASKS.md`, and `docs/ORCHESTRATION.md` for factory context.
 
 ## Package contents
 
