@@ -45,6 +45,12 @@ test('parses pnpm v9, peer-qualified, scoped, and legacy package keys', async ()
   assert.ok(identities.includes('peer-user@1.0.0'));
   assert.ok(identities.includes('legacy-package@1.2.3'));
   assert.ok(identities.includes('@legacy/scope@4.5.6'));
+
+  const parent = facts.packages.find((pkg) => pkg.name === 'parent');
+  assert.deepEqual(parent?.dependencyNames, ['@scope/child', 'child', 'optional-child', 'peer-child']);
+
+  const peerUser = facts.packages.find((pkg) => pkg.name === 'peer-user');
+  assert.deepEqual(peerUser?.dependencyNames, ['kleur']);
 });
 
 test('parses yarn v1 lockfile facts', async () => {
