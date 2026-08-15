@@ -61,7 +61,7 @@ function parseYarnV1(content: string): YarnEntry[] {
     }
 
     const trimmed = line.trim();
-    if (trimmed === 'dependencies:') {
+    if (trimmed === 'dependencies:' || trimmed === 'optionalDependencies:') {
       inDependencies = true;
       continue;
     }
