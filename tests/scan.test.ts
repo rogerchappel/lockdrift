@@ -74,6 +74,14 @@ test('scan detects package manager mismatch', async () => {
   assert.ok(summary.findings.some((finding) => finding.code === 'package-manager-mismatch'));
 });
 
+test('scan retains yarn v1 optional dependencies as used lock entries', async () => {
+  const summary = await scanProject('fixtures/yarn-optional');
+
+  assert.ok(!summary.findings.some((finding) =>
+    finding.code === 'unused-lock-entry' && finding.packageName === 'optional-child'
+  ));
+});
+
 test('scan accepts clean npm fixture', async () => {
   const summary = await scanProject('fixtures/clean-npm');
 
