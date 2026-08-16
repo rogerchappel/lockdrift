@@ -53,3 +53,10 @@ test('parses yarn v1 lockfile facts', async () => {
   assert.equal(facts.kind, 'yarn');
   assert.ok(facts.packages.some((pkg) => pkg.name === 'ansi-colors' && pkg.dependencyNames.includes('color-name')));
 });
+
+test('parses yarn v1 required and optional dependency edges', async () => {
+  const facts = await parseLockfile(path.join(root, 'yarn-optional/yarn.lock'), path.join(root, 'yarn-optional'));
+  const parent = facts.packages.find((pkg) => pkg.name === 'parent');
+
+  assert.deepEqual(parent?.dependencyNames, ['required-child', 'optional-child']);
+});

@@ -72,7 +72,8 @@ explicit error.
 - pnpm `pnpm-lock.yaml` package entries using legacy slash keys and the
   name-at-version keys emitted by pnpm 9, including scoped and peer-qualified
   packages.
-- Yarn v1 `yarn.lock`.
+- Yarn v1 `yarn.lock`, including `dependencies` and `optionalDependencies`
+  package edges.
 
 Yarn Berry support is limited in this MVP. Vulnerability database lookups are intentionally out of scope.
 

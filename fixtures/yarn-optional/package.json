@@ -1,0 +1,8 @@
+{
+  "name": "yarn-optional-fixture",
+  "private": true,
+  "packageManager": "yarn@1.22.22",
+  "dependencies": {
+    "parent": "1.0.0"
+  }
+}
