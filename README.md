@@ -69,9 +69,9 @@ explicit error.
 ## Supported Lockfiles
 
 - npm `package-lock.json` v2/v3 package maps, plus recursively nested v1 dependency maps.
-- pnpm `pnpm-lock.yaml` package entries using legacy slash keys and the
-  name-at-version keys emitted by pnpm 9, including scoped and peer-qualified
-  packages.
+- pnpm `pnpm-lock.yaml` package entries using legacy slash keys, plus pnpm 9
+  `packages`/`importers`/`snapshots` layouts with scoped and peer-qualified
+  package identities and snapshot dependency edges.
 - Yarn v1 `yarn.lock`, including `dependencies` and `optionalDependencies`
   package edges.
 

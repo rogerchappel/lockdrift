@@ -7,18 +7,29 @@ import { classifySource } from '../source.js';
 type PnpmLock = {
   lockfileVersion?: string | number;
   packages?: Record<string, PnpmPackageEntry>;
+  importers?: Record<string, PnpmDependencyEntry>;
+  snapshots?: Record<string, PnpmDependencyEntry>;
 };
 
-type PnpmPackageEntry = {
-  resolution?: { integrity?: string; tarball?: string; repo?: string };
-  dependencies?: Record<string, string>;
-  optionalDependencies?: Record<string, string>;
+type PnpmDependencyEntry = {
+  dependencies?: Record<string, string | PnpmDependencyReference>;
+  optionalDependencies?: Record<string, string | PnpmDependencyReference>;
   peerDependencies?: Record<string, string>;
+};
+
+type PnpmDependencyReference = {
+  version?: string;
+  specifier?: string;
+};
+
+type PnpmPackageEntry = PnpmDependencyEntry & {
+  resolution?: { integrity?: string; tarball?: string; repo?: string };
 };
 
 export async function parsePnpmLockfile(file: string, root: string): Promise<LockfileFacts> {
   const raw = YAML.parse(await readFile(file, 'utf8')) as PnpmLock;
   const packages: LockPackage[] = [];
+  const snapshotDependencies = collectSnapshotDependencies(raw.snapshots ?? {});
 
   for (const [key, entry] of Object.entries(raw.packages ?? {})) {
     const parsed = parsePnpmPackageKey(key);
@@ -34,10 +45,9 @@ export async function parsePnpmLockfile(file: string, root: string): Promise<Loc
       lockfile: path.relative(root, file),
       key,
       dependencyNames: [
-        ...Object.keys(entry.dependencies ?? {}),
-        ...Object.keys(entry.optionalDependencies ?? {}),
-        ...Object.keys(entry.peerDependencies ?? {})
-      ].sort()
+        ...dependencyNames(entry),
+        ...(snapshotDependencies.get(packageIdentity(parsed)) ?? [])
+      ].filter((name, index, names) => names.indexOf(name) === index).sort()
     });
   }
 
@@ -46,6 +56,31 @@ export async function parsePnpmLockfile(file: string, root: string): Promise<Loc
     path: path.relative(root, file),
     packages: packages.sort((a, b) => a.key.localeCompare(b.key))
   };
+}
+
+function collectSnapshotDependencies(snapshots: Record<string, PnpmDependencyEntry>): Map<string, string[]> {
+  const dependencies = new Map<string, Set<string>>();
+
+  for (const [key, entry] of Object.entries(snapshots)) {
+    const identity = packageIdentity(parsePnpmPackageKey(key));
+    const names = dependencies.get(identity) ?? new Set<string>();
+    for (const name of dependencyNames(entry)) names.add(name);
+    dependencies.set(identity, names);
+  }
+
+  return new Map([...dependencies].map(([identity, names]) => [identity, [...names]]));
+}
+
+function dependencyNames(entry: PnpmDependencyEntry): string[] {
+  return [
+    ...Object.keys(entry.dependencies ?? {}),
+    ...Object.keys(entry.optionalDependencies ?? {}),
+    ...Object.keys(entry.peerDependencies ?? {})
+  ];
+}
+
+function packageIdentity(pkg: { name: string; version?: string }): string {
+  return `${pkg.name}@${pkg.version ?? ''}`;
 }
 
 function parsePnpmPackageKey(key: string): { name: string; version?: string } {

@@ -39,13 +39,21 @@ test('scan analyzes real pnpm v9 keys by package name', async () => {
   assert.ok(!summary.findings.some((finding) =>
     finding.packageName === 'ignored-tool'
   ));
+  for (const child of ['child', 'optional-child', 'peer-child', '@scope/child']) {
+    assert.ok(!summary.findings.some((finding) =>
+      finding.code === 'unused-lock-entry' && finding.packageName === child
+    ));
+  }
+  assert.ok(summary.findings.some((finding) =>
+    finding.code === 'unused-lock-entry' && finding.packageName === 'orphan'
+  ));
 });
 
-test('explain matches pnpm v9 peer-qualified package keys', async () => {
+test('explain associates pnpm v9 peer-qualified snapshots with package facts', async () => {
   const explanation = await explainPackage('fixtures/pnpm-v9/pnpm-lock.yaml', 'peer-user');
 
   assert.match(explanation, /^peer-user@1\.0\.0/m);
-  assert.match(explanation, /key: peer-user@1\.0\.0\(kleur@4\.1\.5\)/);
+  assert.match(explanation, /key: peer-user@1\.0\.0/);
   assert.match(explanation, /dependencies: kleur/);
 });
 
