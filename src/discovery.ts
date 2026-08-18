@@ -21,9 +21,27 @@ type RawPackageJson = {
   optionalDependencies?: Record<string, string>;
 };
 
-export async function findLockfiles(root: string): Promise<string[]> {
-  const files = await walk(root);
-  return files.filter((file) => lockfileNames.has(path.basename(file))).sort();
+export async function findLockfiles(root: string, workspaceRoots: string[] = []): Promise<string[]> {
+  const directories = new Set<string>([root]);
+  const rootManifest = await readManifest(path.join(root, 'package.json'), root);
+
+  for (const pattern of [...workspaceRoots, ...(rootManifest?.workspaces ?? [])]) {
+    for (const manifest of await expandWorkspacePattern(root, pattern)) {
+      directories.add(path.dirname(manifest));
+    }
+  }
+
+  const candidates = [...directories].flatMap((directory) =>
+    [...lockfileNames].map((name) => path.join(directory, name))
+  );
+  const existing = await Promise.all(candidates.map(async (file) => {
+    try {
+      return (await stat(file)).isFile() ? file : undefined;
+    } catch {
+      return undefined;
+    }
+  }));
+  return existing.filter((file): file is string => file !== undefined).sort();
 }
 
 export async function readManifests(root: string, workspaceRoots: string[]): Promise<PackageManifest[]> {
@@ -130,24 +148,6 @@ async function readManifest(file: string, root: string): Promise<PackageManifest
     }
     throw error;
   }
-}
-
-async function walk(directory: string): Promise<string[]> {
-  const entries = await safeReadDir(directory);
-  const files: string[] = [];
-
-  for (const entry of entries) {
-    const fullPath = path.join(directory, entry.name);
-    if (entry.isDirectory()) {
-      if (!ignoredDirectories.has(entry.name)) {
-        files.push(...await walk(fullPath));
-      }
-      continue;
-    }
-    files.push(fullPath);
-  }
-
-  return files;
 }
 
 async function safeReadDir(directory: string) {
