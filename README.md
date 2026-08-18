@@ -49,6 +49,12 @@ Create `.lockdrift.json` at the scanned project root:
 }
 ```
 
+The scan reads lockfiles at the project root and in directories selected by
+`package.json` workspaces or `workspaceRoots`. It does not recursively treat
+unrelated fixture, example, or vendor lockfiles as production dependency state.
+Add an intentional nested project to `workspaceRoots` when it should be part of
+the scan.
+
 Workspace patterns from both `package.json` and `workspaceRoots` use
 root-relative directory segments. Literal segments, `*` (one directory), and
 `**` (zero or more directories) are supported, so `packages/*` finds direct
