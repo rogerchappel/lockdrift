@@ -8,7 +8,7 @@ import type { ScanSummary } from './types.js';
 export async function scanProject(target: string): Promise<ScanSummary> {
   const root = path.resolve(target);
   const config = await loadConfig(root);
-  const lockfilePaths = await findLockfiles(root);
+  const lockfilePaths = await findLockfiles(root, config.workspaceRoots);
   const [lockfiles, manifests] = await Promise.all([
     Promise.all(lockfilePaths.map((file) => parseLockfile(file, root))),
     readManifests(root, config.workspaceRoots)
