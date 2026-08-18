@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 import { mkdtemp, mkdir, rm, writeFile } from 'node:fs/promises';
 import os from 'node:os';
 import path from 'node:path';
-import { readManifests } from '../src/discovery.js';
+import { findLockfiles, readManifests } from '../src/discovery.js';
 
 test('workspaceRoots expands nested globs, ignores generated directories, and deduplicates manifests', async () => {
   const root = await mkdtemp(path.join(os.tmpdir(), 'lockdrift-discovery-'));
@@ -29,6 +29,42 @@ test('workspace discovery rejects unsupported patterns explicitly', async () => 
       readManifests(root, ['packages/app-*']),
       /only complete "\*" and "\*\*" path segments are supported/
     );
+  } finally {
+    await rm(root, { recursive: true });
+  }
+});
+
+test('lockfile discovery includes roots and real workspaces but excludes unrelated fixtures', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'lockdrift-lockfiles-'));
+  try {
+    await writeManifest(root, 'package.json', { workspaces: ['packages/*'] });
+    await writeManifest(root, 'packages/app/package.json', { name: 'app' });
+    await writeFile(path.join(root, 'package-lock.json'), '{}');
+    await writeFile(path.join(root, 'packages/app/pnpm-lock.yaml'), 'lockfileVersion: 9');
+    await writeManifest(root, 'fixtures/example/package.json', { name: 'fixture' });
+    await writeFile(path.join(root, 'fixtures/example/package-lock.json'), '{}');
+
+    const lockfiles = await findLockfiles(root);
+
+    assert.deepEqual(lockfiles.map((file) => path.relative(root, file)), [
+      'package-lock.json',
+      'packages/app/pnpm-lock.yaml'
+    ]);
+  } finally {
+    await rm(root, { recursive: true });
+  }
+});
+
+test('lockfile discovery honors configured workspace roots', async () => {
+  const root = await mkdtemp(path.join(os.tmpdir(), 'lockdrift-lockfiles-'));
+  try {
+    await writeManifest(root, 'package.json', { name: 'root' });
+    await writeManifest(root, 'components/api/package.json', { name: 'api' });
+    await writeFile(path.join(root, 'components/api/yarn.lock'), '');
+
+    const lockfiles = await findLockfiles(root, ['components/*']);
+
+    assert.deepEqual(lockfiles.map((file) => path.relative(root, file)), ['components/api/yarn.lock']);
   } finally {
     await rm(root, { recursive: true });
   }
