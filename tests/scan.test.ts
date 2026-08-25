@@ -1,6 +1,35 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { mkdtemp, rm, writeFile } from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
 import { explainPackage, scanProject } from '../src/scanner.js';
+
+test('scan rejects missing and non-directory targets before discovery', async () => {
+  const temporaryRoot = await mkdtemp(path.join(os.tmpdir(), 'lockdrift-scan-'));
+  const fileTarget = path.join(temporaryRoot, 'package.json');
+  await writeFile(fileTarget, '{}', 'utf8');
+
+  try {
+    await assert.rejects(scanProject(path.join(temporaryRoot, 'missing')), /Scan target does not exist:/);
+    await assert.rejects(scanProject(fileTarget), /Scan target is not a directory:/);
+  } finally {
+    await rm(temporaryRoot, { recursive: true, force: true });
+  }
+});
+
+test('scan accepts an existing empty project directory', async () => {
+  const emptyRoot = await mkdtemp(path.join(os.tmpdir(), 'lockdrift-empty-'));
+
+  try {
+    const summary = await scanProject(emptyRoot);
+    assert.equal(summary.root, emptyRoot);
+    assert.deepEqual(summary.lockfiles, []);
+    assert.deepEqual(summary.manifests, []);
+  } finally {
+    await rm(emptyRoot, { recursive: true, force: true });
+  }
+});
 
 test('scan detects npm drift findings', async () => {
   const summary = await scanProject('fixtures/npm-drift');
