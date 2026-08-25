@@ -4,7 +4,7 @@ import path from 'node:path';
 import { Command, InvalidArgumentError } from 'commander';
 import { loadConfig } from './config.js';
 import { renderJson, renderMarkdown } from './report.js';
-import { explainPackage, scanProject } from './scanner.js';
+import { explainPackage, InvalidScanTargetError, scanProject } from './scanner.js';
 import { parseSeverity, severityMeets } from './severity.js';
 import type { OutputFormat, Severity } from './types.js';
 
@@ -49,7 +49,16 @@ program
     process.stdout.write(`${await explainPackage(lockfile, options.package)}\n`);
   });
 
-await program.parseAsync(process.argv);
+try {
+  await program.parseAsync(process.argv);
+} catch (error) {
+  if (error instanceof InvalidScanTargetError) {
+    process.stderr.write(`Error: ${error.message}\n`);
+    process.exitCode = 1;
+  } else {
+    throw error;
+  }
+}
 
 function parseFormat(value: string): OutputFormat {
   if (value === 'markdown' || value === 'json') {
