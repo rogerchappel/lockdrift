@@ -28,6 +28,8 @@ bash scripts/validate.sh
 
 `lockdrift scan [path]`
 
+`path` must exist and be a directory. Invalid paths exit non-zero with a concise error on stderr and do not produce a report. Existing empty directories are valid scan targets.
+
 - `--format markdown|json`: choose report format. Default is Markdown.
 - `--out <path>`: write the report to a file. Without this, LockDrift writes to stdout.
 - `--fail-on info|low|medium|high`: exit non-zero when findings meet the threshold.
