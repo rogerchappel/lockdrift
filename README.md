@@ -28,13 +28,19 @@ bash scripts/validate.sh
 
 `lockdrift scan [path]`
 
-`path` must exist and be a directory. Invalid paths exit non-zero with a concise error on stderr and do not produce a report. Existing empty directories are valid scan targets.
+`path` must exist and be a directory. Invalid paths, malformed configuration,
+and unreadable or malformed recognized lockfiles exit with code 1, write one
+concise contextual error to stderr without a JavaScript stack trace, and do not
+produce a report. Existing empty directories are valid scan targets.
 
 - `--format markdown|json`: choose report format. Default is Markdown.
 - `--out <path>`: write the report to a file. Without this, LockDrift writes to stdout.
 - `--fail-on info|low|medium|high`: exit non-zero when findings meet the threshold.
 
 `lockdrift explain <lockfile> --package <name>`
+
+Unsupported or malformed lockfiles follow the same concise stderr contract and
+produce no explanation output.
 
 Prints the locked versions, source, resolved URL, integrity, and child dependency names for one package in one lockfile.
 
