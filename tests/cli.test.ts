@@ -27,6 +27,20 @@ test('cli scan json exits non-zero when threshold is met', async () => {
   );
 });
 
+test('cli scan json omits absent optional peers but reports required peers', async () => {
+  await assert.rejects(
+    execFileAsync(process.execPath, ['dist/src/cli.js', 'scan', 'fixtures/npm-peers', '--format', 'json']),
+    (error: Error & { code?: number; stdout?: string }) => {
+      const report = JSON.parse(error.stdout ?? '') as { findings: Array<{ code: string; packageName?: string }> };
+      const missing = report.findings.filter((finding) => finding.code === 'missing-lock-entry');
+
+      assert.equal(error.code, 1);
+      assert.deepEqual(missing.map((finding) => finding.packageName), ['required-peer']);
+      return true;
+    }
+  );
+});
+
 test('cli scan reports invalid targets without output or a stack trace', async () => {
   const temporaryRoot = await mkdtemp(path.join(os.tmpdir(), 'lockdrift-cli-'));
   const fileTarget = path.join(temporaryRoot, 'not-a-directory');

@@ -1,0 +1,13 @@
+{
+  "name": "npm-peers-fixture",
+  "version": "1.0.0",
+  "peerDependencies": {
+    "optional-peer": "^1.0.0",
+    "required-peer": "^2.0.0"
+  },
+  "peerDependenciesMeta": {
+    "optional-peer": {
+      "optional": true
+    }
+  }
+}
