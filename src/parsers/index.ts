@@ -5,16 +5,20 @@ import { parsePnpmLockfile } from './pnpm.js';
 import { parseYarnLockfile } from './yarn.js';
 
 export async function parseLockfile(file: string, root: string): Promise<LockfileFacts> {
-  const name = path.basename(file);
-  if (name === 'package-lock.json') {
-    return parseNpmLockfile(file, root);
-  }
-  if (name === 'pnpm-lock.yaml') {
-    return parsePnpmLockfile(file, root);
-  }
-  if (name === 'yarn.lock') {
-    return parseYarnLockfile(file, root);
-  }
+  try {
+    const name = path.basename(file);
+    if (name === 'package-lock.json') {
+      return await parseNpmLockfile(file, root);
+    }
+    if (name === 'pnpm-lock.yaml') {
+      return await parsePnpmLockfile(file, root);
+    }
+    if (name === 'yarn.lock') {
+      return await parseYarnLockfile(file, root);
+    }
 
-  throw new Error(`Unsupported lockfile: ${file}`);
+    throw new Error('Unsupported lockfile type');
+  } catch (error) {
+    throw new Error(`Unable to parse lockfile ${file}: ${error instanceof Error ? error.message : String(error)}`);
+  }
 }

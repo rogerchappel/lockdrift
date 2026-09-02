@@ -4,7 +4,7 @@ import path from 'node:path';
 import { Command, InvalidArgumentError } from 'commander';
 import { loadConfig } from './config.js';
 import { renderJson, renderMarkdown } from './report.js';
-import { explainPackage, InvalidScanTargetError, scanProject } from './scanner.js';
+import { explainPackage, scanProject } from './scanner.js';
 import { parseSeverity, severityMeets } from './severity.js';
 import type { OutputFormat, Severity } from './types.js';
 
@@ -52,7 +52,7 @@ program
 try {
   await program.parseAsync(process.argv);
 } catch (error) {
-  if (error instanceof InvalidScanTargetError) {
+  if (error instanceof Error) {
     process.stderr.write(`Error: ${error.message}\n`);
     process.exitCode = 1;
   } else {
