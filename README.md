@@ -4,6 +4,8 @@ Offline JavaScript lockfile drift and supply-chain facts auditor.
 
 LockDrift reads package manifests and lockfiles locally, then reports facts that are easy to miss in review: duplicate locked versions, unexpected registries, git/file/tarball sources, package-manager mismatches, direct dependencies missing from lockfiles, and likely stale lock entries.
 
+Required peer dependencies are checked for missing lock entries. Peers marked with `peerDependenciesMeta.<name>.optional: true` are retained as manifest facts but may be absent from the lockfile without producing a finding; required peers continue to produce a high-severity `missing-lock-entry` finding when absent.
+
 ## Quick Start
 
 ```bash
