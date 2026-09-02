@@ -22,6 +22,7 @@ export type ManifestDependency = {
   name: string;
   spec: string;
   scope: DependencyScope;
+  optional: boolean;
 };
 
 export type PackageManifest = {

@@ -81,7 +81,7 @@ function findRegistryDrift(packages: LockPackage[], config: LockdriftConfig): Fi
 function findMissingLockEntries(dependencies: ManifestDependency[], packages: LockPackage[], config: LockdriftConfig): Finding[] {
   const packageNames = new Set(packages.map((pkg) => pkg.name));
   return dependencies
-    .filter((dependency) => !isIgnored(dependency.name, config) && !isLocalSpec(dependency.spec) && !packageNames.has(dependency.name))
+    .filter((dependency) => !dependency.optional && !isIgnored(dependency.name, config) && !isLocalSpec(dependency.spec) && !packageNames.has(dependency.name))
     .map((dependency) => ({
       code: 'missing-lock-entry',
       severity: 'high',
