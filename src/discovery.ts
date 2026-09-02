@@ -18,6 +18,7 @@ type RawPackageJson = {
   dependencies?: Record<string, string>;
   devDependencies?: Record<string, string>;
   peerDependencies?: Record<string, string>;
+  peerDependenciesMeta?: Record<string, { optional?: boolean }>;
   optionalDependencies?: Record<string, string>;
 };
 
@@ -131,7 +132,9 @@ async function readManifest(file: string, root: string): Promise<PackageManifest
     for (const scope of dependencyScopes) {
       const values = raw[scope] ?? {};
       for (const [name, spec] of Object.entries(values)) {
-        dependencies.push({ manifestPath: relative, workspace, name, spec, scope });
+        const optional = scope === 'optionalDependencies'
+          || (scope === 'peerDependencies' && raw.peerDependenciesMeta?.[name]?.optional === true);
+        dependencies.push({ manifestPath: relative, workspace, name, spec, scope, optional });
       }
     }
 
