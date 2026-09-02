@@ -124,3 +124,11 @@ test('scan accepts clean npm fixture', async () => {
 
   assert.equal(summary.findings.length, 0);
 });
+
+test('scan distinguishes optional and required npm peers', async () => {
+  const summary = await scanProject('fixtures/npm-peers');
+  const missing = summary.findings.filter((finding) => finding.code === 'missing-lock-entry');
+
+  assert.deepEqual(missing.map((finding) => finding.packageName), ['required-peer']);
+  assert.equal(summary.manifests[0]?.dependencies.find((dependency) => dependency.name === 'optional-peer')?.optional, true);
+});
