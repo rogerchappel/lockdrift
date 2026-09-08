@@ -56,6 +56,18 @@ test('scan discovers workspace manifests', async () => {
   assert.ok(summary.manifests.some((manifest) => manifest.name === '@fixture/lib'));
 });
 
+test('associates independently locked workspaces with their own lockfile', async () => {
+  const summary = await scanProject('fixtures/npm-independent-workspaces');
+  assert.ok(summary.findings.some((finding) => finding.code === 'missing-lock-entry' && finding.packageName === 'left-pad'));
+  assert.ok(summary.findings.some((finding) => finding.code === 'unused-lock-entry' && finding.packageName === 'left-pad'));
+});
+
+test('allows a root lockfile to govern hoisted workspace dependencies', async () => {
+  const summary = await scanProject('fixtures/npm-hoisted-workspace');
+  assert.equal(summary.findings.some((finding) => finding.code === 'missing-lock-entry' && finding.packageName === 'left-pad'), false);
+  assert.equal(summary.findings.some((finding) => finding.code === 'unused-lock-entry' && finding.packageName === 'left-pad'), false);
+});
+
 test('scan analyzes real pnpm v9 keys by package name', async () => {
   const summary = await scanProject('fixtures/pnpm-v9');
 
