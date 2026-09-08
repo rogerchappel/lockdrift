@@ -1,16 +1,15 @@
 import path from 'node:path';
-import type { Finding, LockdriftConfig, LockfileFacts, LockPackage, ManifestDependency, PackageManifest, ScanSummary } from './types.js';
+import type { Finding, LockdriftConfig, LockfileFacts, LockPackage, PackageManifest, ScanSummary } from './types.js';
 import { registryFromResolved } from './source.js';
 
 export function analyze(root: string, lockfiles: LockfileFacts[], manifests: PackageManifest[], config: LockdriftConfig): ScanSummary {
   const packages = lockfiles.flatMap((lockfile) => lockfile.packages);
-  const manifestDependencies = manifests.flatMap((manifest) => manifest.dependencies);
   const findings = [
     ...findDuplicateVersions(packages, config),
     ...findNonRegistrySources(packages, config),
     ...findRegistryDrift(packages, config),
-    ...findMissingLockEntries(manifestDependencies, packages, config),
-    ...findUnusedLockEntries(manifestDependencies, packages, config),
+    ...findMissingLockEntries(lockfiles, manifests, config),
+    ...findUnusedLockEntries(lockfiles, manifests, config),
     ...findPackageManagerMismatch(lockfiles, manifests)
   ].sort(compareFindings);
 
@@ -78,24 +77,29 @@ function findRegistryDrift(packages: LockPackage[], config: LockdriftConfig): Fi
   });
 }
 
-function findMissingLockEntries(dependencies: ManifestDependency[], packages: LockPackage[], config: LockdriftConfig): Finding[] {
-  const packageNames = new Set(packages.map((pkg) => pkg.name));
-  return dependencies
+function findMissingLockEntries(lockfiles: LockfileFacts[], manifests: PackageManifest[], config: LockdriftConfig): Finding[] {
+  return manifests.flatMap((manifest) => {
+    const lockfile = governingLockfile(manifest, lockfiles);
+    const packageNames = new Set(lockfile?.packages.map((pkg) => pkg.name) ?? []);
+    return manifest.dependencies
     .filter((dependency) => !dependency.optional && !isIgnored(dependency.name, config) && !isLocalSpec(dependency.spec) && !packageNames.has(dependency.name))
     .map((dependency) => ({
       code: 'missing-lock-entry',
       severity: 'high',
       packageName: dependency.name,
       spec: dependency.spec,
-      evidence: `${dependency.name}@${dependency.spec} appears in ${dependency.manifestPath} ${dependency.scope} but not in any lockfile`,
+      evidence: `${dependency.name}@${dependency.spec} appears in ${dependency.manifestPath} ${dependency.scope} but not in ${lockfile?.path ?? 'a governing lockfile'}`,
       remediation: 'Regenerate the lockfile with the intended package manager.'
     }));
+  });
 }
 
-function findUnusedLockEntries(dependencies: ManifestDependency[], packages: LockPackage[], config: LockdriftConfig): Finding[] {
-  const directNames = new Set(dependencies.map((dependency) => dependency.name));
-  const referencedNames = new Set(packages.flatMap((pkg) => pkg.dependencyNames));
-  return packages
+function findUnusedLockEntries(lockfiles: LockfileFacts[], manifests: PackageManifest[], config: LockdriftConfig): Finding[] {
+  return lockfiles.flatMap((lockfile) => {
+    const ownedManifests = manifests.filter((manifest) => governingLockfile(manifest, lockfiles) === lockfile);
+    const directNames = new Set(ownedManifests.flatMap((manifest) => manifest.dependencies.map((dependency) => dependency.name)));
+    const referencedNames = new Set(lockfile.packages.flatMap((pkg) => pkg.dependencyNames));
+    return lockfile.packages
     .filter((pkg) => !isIgnored(pkg.name, config) && !directNames.has(pkg.name) && !referencedNames.has(pkg.name))
     .map((pkg) => ({
       code: 'unused-lock-entry',
@@ -105,6 +109,17 @@ function findUnusedLockEntries(dependencies: ManifestDependency[], packages: Loc
       evidence: `${pkg.name}@${pkg.version ?? 'unknown'} is locked in ${pkg.lockfile} but is not a direct manifest dependency and has no locked child dependencies`,
       remediation: 'Run the package manager prune/install flow and review whether the lockfile carries stale entries.'
     }));
+  });
+}
+
+function governingLockfile(manifest: PackageManifest, lockfiles: LockfileFacts[]): LockfileFacts | undefined {
+  const manifestDirectory = path.posix.dirname(manifest.path.replaceAll(path.sep, '/'));
+  return lockfiles
+    .filter((lockfile) => {
+      const lockDirectory = path.posix.dirname(lockfile.path.replaceAll(path.sep, '/'));
+      return lockDirectory === '.' || manifestDirectory === lockDirectory || manifestDirectory.startsWith(`${lockDirectory}/`);
+    })
+    .sort((a, b) => path.posix.dirname(b.path).length - path.posix.dirname(a.path).length)[0];
 }
 
 function findPackageManagerMismatch(lockfiles: LockfileFacts[], manifests: PackageManifest[]): Finding[] {
