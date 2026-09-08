@@ -65,6 +65,11 @@ unrelated fixture, example, or vendor lockfiles as production dependency state.
 Add an intentional nested project to `workspaceRoots` when it should be part of
 the scan.
 
+Manifest dependency and unused-entry checks use the nearest lockfile in the
+manifest's directory or an ancestor directory. A workspace with its own
+lockfile is checked independently, while workspaces without one use a hoisted
+root lockfile.
+
 Workspace patterns from both `package.json` and `workspaceRoots` use
 root-relative directory segments. Literal segments, `*` (one directory), and
 `**` (zero or more directories) are supported, so `packages/*` finds direct
